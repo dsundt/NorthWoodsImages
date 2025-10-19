@@ -87,7 +87,6 @@ jobs:
       - name: Prepare site
         run: |
           mkdir -p site
-          # Try to use branded HTML as index; if not found, create a simple index listing files.
           FOUND_HTML=$(ls output/landmark/*_Photo_Order_Branded.html 2>/dev/null | head -n 1 || true)
           if [ -n "$FOUND_HTML" ]; then
             cp "$FOUND_HTML" site/index.html
@@ -102,6 +101,10 @@ jobs:
           mkdir -p site/assets
           if [ -d output/landmark/thumbnails ]; then
             cp -r output/landmark/thumbnails site/assets/thumbnails
+          fi
+          if [ -d ui ]; then
+            mkdir -p site/ui
+            cp -r ui/* site/ui/
           fi
 
       - name: Upload build artifacts
