@@ -1,0 +1,92 @@
+name: Build and Deploy Landmark Photos
+on:
+  workflow_dispatch:
+    inputs:
+      property_name:
+        description: "Property name"
+        required: true
+        default: "The Landmark"
+      brand_name:
+        description: "Brand name"
+        required: true
+        default: "Red Canoe Lodging"
+      brand_email:
+        description: "Brand email"
+        required: true
+        default: "info@redcanoelodging.com"
+      brand_phone:
+        description: "Brand phone"
+        required: true
+        default: "715-351-9687"
+      brand_site:
+        description: "Brand website"
+        required: true
+        default: "redcanoelodging.com"
+      zip_file:
+        description: "Path to ZIP archive"
+        required: true
+        default: "input/LandMark Photos Names.zip"
+      logo_file:
+        description: "Path to logo file"
+        required: true
+        default: "input/IMG_1496.jpeg"
+      captions_csv:
+        description: "Optional captions CSV"
+        required: false
+        default: ""
+      order_file:
+        description: "Optional order file"
+        required: false
+        default: ""
+      max_web_width:
+        description: "Max web width (px)"
+        required: true
+        default: "2560"
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -r requirements.txt
+      - name: Run pipeline
+        env:
+          ZIP_FILE: ${{ github.event.inputs.zip_file }}
+          LOGO_FILE: ${{ github.event.inputs.logo_file }}
+          PROPERTY_NAME: ${{ github.event.inputs.property_name }}
+          BRAND_NAME: ${{ github.event.inputs.brand_name }}
+          BRAND_EMAIL: ${{ github.event.inputs.brand_email }}
+          BRAND_PHONE: ${{ github.event.inputs.brand_phone }}
+          BRAND_SITE: ${{ github.event.inputs.brand_site }}
+          CAPTIONS_CSV: ${{ github.event.inputs.captions_csv }}
+          ORDER_FILE: ${{ github.event.inputs.order_file }}
+          MAX_WEB_WIDTH: ${{ github.event.inputs.max_web_width }}
+        run: |
+          mkdir -p output
+          args=(
+            --zip "$ZIP_FILE"
+            --logo "$LOGO_FILE"
+            --property-name "$PROPERTY_NAME"
+            --brand-name "$BRAND_NAME"
+            --brand-email "$BRAND_EMAIL"
+            --brand-phone "$BRAND_PHONE"
+            --brand-site "$BRAND_SITE"
+            --outdir "output/landmark"
+            --max-web-width "$MAX_WEB_WIDTH"
+          )
+          if [ -n "$CAPTIONS_CSV" ]; then
+            args+=(--captions-csv "$CAPTIONS_CSV")
+          fi
+          if [ -n "$ORDER_FILE" ]; then
+            args+=(--order-file "$ORDER_FILE")
+          fi
+          python src/landmark_pipeline.py "${args[@]}"
