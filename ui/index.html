@@ -150,7 +150,14 @@
       let t = await res.text();
       throw new Error(`${res.status} ${res.statusText}: ${t}`);
     }
-    return isJson ? res.json() : res;
+    if(!isJson) return res;
+    // GitHub may return 204 No Content (e.g., workflow dispatch). Avoid parsing empty bodies.
+    if(res.status === 204) return null;
+    const contentLength = res.headers.get("content-length");
+    if(contentLength === "0") return null;
+    const text = await res.text();
+    if(!text) return null;
+    try{ return JSON.parse(text); }catch(_){ return null; }
   }
 
   async function uploadContent(owner, repo, token, path, file){
