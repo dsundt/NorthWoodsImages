@@ -5,35 +5,41 @@
   <title>NorthWoodsImages — Photo Processor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:#f8fafc;color:#0f172a}
-    header{background:#fff;border-bottom:2px solid #8B1E24;padding:12px 20px}
+    :root { --brand:#8B1E24; --accent:#2E4A3B; --muted:#64748b; --line:#e2e8f0; --ink:#0f172a; --paper:#ffffff; --wash:#f8fafc; }
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;margin:0;background:var(--wash);color:var(--ink)}
+    header{background:var(--paper);border-bottom:2px solid var(--brand);padding:12px 20px}
     h1{margin:0;font-size:20px}
-    .wrap{max-width:900px;margin:24px auto;padding:0 16px}
-    fieldset{border:1px solid #e2e8f0;border-radius:8px;margin-bottom:16px;background:#fff}
+    .wrap{max-width:1000px;margin:24px auto;padding:0 16px}
+    fieldset{border:1px solid var(--line);border-radius:8px;margin-bottom:16px;background:var(--paper)}
     legend{padding:0 8px;color:#334155}
     label{display:block;margin:10px 0 6px;font-size:14px}
     input[type="text"],input[type="password"],input[type="file"],select{width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px}
-    .grid{display:grid;gap:12px;grid-template-columns:1fr 1fr}
-    .btn{background:#2E4A3B;color:#fff;border:none;border-radius:8px;padding:10px 14px;font-weight:600;cursor:pointer}
+    .grid{display:grid;gap:12px}
+    @media(min-width:720px){ .grid.two{grid-template-columns:1fr 1fr} }
+    .btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 14px;font-weight:600;cursor:pointer}
     .btn[disabled]{opacity:.5;cursor:not-allowed}
-    .muted{color:#64748b;font-size:12px}
-    .status{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px;margin-top:16px}
+    .muted{color:var(--muted);font-size:12px}
+    .status{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:12px;margin-top:16px;white-space:pre-wrap}
     .links a{display:block;margin:4px 0;color:#0ea5e9;text-decoration:none}
     .links a:hover{text-decoration:underline}
     .row{display:flex;gap:12px;flex-wrap:wrap}
-    .pill{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:999px;padding:4px 10px;font-size:12px}
+    .pill{background:#f1f5f9;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px}
     .danger{color:#b91c1c}
+    .ok{color:#15803d}
+    .btn-row{display:flex;gap:8px;flex-wrap:wrap}
+    .small{font-size:12px}
+    .note{background:#fffbeb;border:1px solid #f59e0b;color:#92400e;padding:8px;border-radius:8px;margin:8px 0}
   </style>
 </head>
 <body>
 <header><h1>NorthWoodsImages — Photo Processor</h1></header>
 <div class="wrap">
-  <p class="muted">This page runs entirely in your browser. Your GitHub token is used only for API calls from your device to GitHub.</p>
+  <p class="muted">Runs entirely in your browser. Your GitHub token is sent only to GitHub’s API to upload files, start the workflow, and fetch artifacts.</p>
 
   <form id="form">
     <fieldset>
       <legend>GitHub</legend>
-      <div class="grid">
+      <div class="grid two">
         <div>
           <label>Owner (username or org)</label>
           <input id="owner" type="text" placeholder="your-username" required>
@@ -43,18 +49,18 @@
           <input id="repo" type="text" value="NorthWoodsImages" required>
         </div>
       </div>
-      <label>Personal Access Token (fine-grained with <code>contents</code> and <code>workflows</code> scopes)</label>
-      <input id="token" type="password" placeholder="ghp_..." required>
-      <p class="muted">Tip: Create a temporary fine-grained token limited to this repo, with <strong>Contents: Read/Write</strong> and <strong>Workflows: Read/Write</strong>.</p>
+      <label>Personal Access Token (fine-grained, <span class="small">Contents RW + Workflows RW</span>)</label>
+      <input id="token" type="password" placeholder="github_pat_..." required>
+      <p class="muted">Create at Settings → Developer settings → Personal access tokens → Fine-grained tokens. Scope to this repo with Contents: Read/Write and Workflows: Read/Write.</p>
     </fieldset>
 
     <fieldset>
       <legend>Inputs</legend>
-      <label>Images ZIP</label>
+      <label>Images ZIP <span class="muted">(recommend &lt;= 95 MB)</span></label>
       <input id="zip" type="file" accept=".zip" required>
       <label>Logo (watermark)</label>
       <input id="logo" type="file" accept="image/*" required>
-      <div class="grid">
+      <div class="grid two">
         <div>
           <label>Optional: captions.csv</label>
           <input id="captions" type="file" accept=".csv">
@@ -64,11 +70,12 @@
           <input id="order" type="file" accept=".txt">
         </div>
       </div>
+      <div class="note small">Files are committed to: <code>input/uploads/&lt;timestamp&gt;/</code> to avoid overwrites (no SHA needed).</div>
     </fieldset>
 
     <fieldset>
       <legend>Brand & Property</legend>
-      <div class="grid">
+      <div class="grid two">
         <div>
           <label>Property name</label>
           <input id="property" type="text" value="The Landmark" required>
@@ -78,7 +85,7 @@
           <input id="brand" type="text" value="Red Canoe Lodging" required>
         </div>
       </div>
-      <div class="grid">
+      <div class="grid two">
         <div>
           <label>Brand email</label>
           <input id="email" type="text" value="info@redcanoelodging.com" required>
@@ -94,10 +101,13 @@
       <input id="maxw" type="text" value="2560" required>
     </fieldset>
 
-    <button id="run" class="btn" type="submit">Upload & Run Workflow</button>
+    <div class="btn-row">
+      <button id="run" class="btn" type="submit">Upload & Run Workflow</button>
+      <button id="reset" type="button">Reset</button>
+    </div>
     <div class="row" style="margin-top:8px">
-      <span class="pill">Uploads → <code>input/uploads/&lt;timestamp&gt;/</code></span>
-      <span class="pill">Triggers Action: <code>Build and Deploy Landmark Photos</code></span>
+      <span class="pill">Triggers: <code>Build and Deploy Landmark Photos</code></span>
+      <span class="pill">Outputs: PDF, HTML, caption list, full/web ZIPs</span>
     </div>
   </form>
 
@@ -106,57 +116,64 @@
 </div>
 
 <script>
-(async function(){
+(function(){
   const $ = (id)=>document.getElementById(id);
-  const out = $("out"); const links = $("links");
-  const show = (el)=>{el.style.display="block";}; const hide=(el)=>{el.style.display="none";};
-  const log = (msg, cls="") => { show(out); out.innerHTML += `<div class="${cls}">${msg}</div>`; };
+  const out=$("out"), links=$("links"), btn=$("run"), reset=$("reset");
+  const show = (el)=>el.style.display="block";
+  const hide = (el)=>el.style.display="none";
+  const log = (msg, cls="")=>{ show(out); out.innerHTML += `\n${cls?`[${cls}] `:""}${msg}`; out.scrollTop = out.scrollHeight; };
 
-  const b64 = (arrbuf)=> btoa(String.fromCharCode(...new Uint8Array(arrbuf)));
+  // Size check guard for GitHub Contents API and browser memory
+  const MAX_SAFE_UPLOAD = 95 * 1024 * 1024; // ~95 MB
 
-  async function gh(method, url, token, body){
+  function fileToBase64(file){
+    return new Promise((resolve,reject)=>{
+      const reader = new FileReader();
+      reader.onload = () => {
+        const res = reader.result || "";
+        const idx = res.indexOf(",");
+        resolve(idx>=0 ? res.slice(idx+1) : res);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function gh(method, url, token, body, isJson=true){
+    const headers = { "Authorization":"Bearer "+token, "Accept":"application/vnd.github+json" };
     const res = await fetch(url, {
       method,
-      headers: {
-        "Authorization": "Bearer " + token,
-        "Accept": "application/vnd.github+json"
-      },
-      body: body ? JSON.stringify(body) : undefined
+      headers,
+      body: body ? (isJson ? JSON.stringify(body) : body) : undefined
     });
     if(!res.ok){
-      const t = await res.text();
+      let t = await res.text();
       throw new Error(`${res.status} ${res.statusText}: ${t}`);
     }
-    return res.json();
+    return isJson ? res.json() : res;
   }
 
-  async function uploadContent(owner, repo, token, path, file) {
-    const ab = await file.arrayBuffer();
-    const content = b64(ab);
+  async function uploadContent(owner, repo, token, path, file){
+    if(file.size > MAX_SAFE_UPLOAD){
+      throw new Error(`File too large for browser/API upload (${(file.size/1024/1024).toFixed(1)} MB). Use git commit, LFS, or split uploads.`);
+    }
+    const content = await fileToBase64(file);
     const url = `https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`;
-    return gh("PUT", url, token, {
-      message: `Add ${path} via UI`,
-      content
-    });
+    return gh("PUT", url, token, { message:`Add ${path} via UI`, content });
   }
 
-  async function dispatchWorkflow(owner, repo, token, inputs) {
-    // workflow filename MUST match your repo
+  async function dispatchWorkflow(owner, repo, token, inputs){
     const url = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/build.yml/dispatches`;
-    return gh("POST", url, token, {
-      ref: "main",
-      inputs
-    });
+    return gh("POST", url, token, { ref:"main", inputs });
   }
 
-  async function getLatestRun(owner, repo, token) {
-    const url = `https://api.github.com/repos/${owner}/${repo}/actions/runs?event=workflow_dispatch&per_page=1`;
-    const j = await gh("GET", url, token);
-    return j.workflow_runs && j.workflow_runs.length ? j.workflow_runs[0] : null;
+  async function listRuns(owner, repo, token){
+    const url = `https://api.github.com/repos/${owner}/${repo}/actions/runs?event=workflow_dispatch&per_page=5`;
+    return gh("GET", url, token);
   }
 
-  async function getRun(owner, repo, token, runId){
-    const url = `https://api.github.com/repos/${owner}/${repo}/actions/runs/${runId}`;
+  async function getRun(owner, repo, token, id){
+    const url = `https://api.github.com/repos/${owner}/${repo}/actions/runs/${id}`;
     return gh("GET", url, token);
   }
 
@@ -165,10 +182,23 @@
     return gh("GET", url, token);
   }
 
-  $("form").addEventListener("submit", async (e)=>{
+  async function downloadArtifact(owner, repo, token, artifact){
+    // Fetch artifact ZIP and trigger client-side download
+    const url = `https://api.github.com/repos/${owner}/${repo}/actions/artifacts/${artifact.id}/zip`;
+    const res = await gh("GET", url, token, null, false);
+    const blob = await res.blob();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${artifact.name}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+    a.remove();
+  }
+
+  async function run(e){
     e.preventDefault();
-    hide(links); out.innerHTML=""; show(out);
-    $("run").disabled = true;
+    out.textContent=""; hide(links); show(out); btn.disabled = true;
 
     try{
       const owner = $("owner").value.trim();
@@ -178,21 +208,26 @@
       const flogo = $("logo").files[0];
       const fcaps = $("captions").files[0] || null;
       const fordr = $("order").files[0] || null;
+      if(!owner || !repo || !token || !fzip || !flogo) throw new Error("Missing required fields.");
 
-      if(!owner || !repo || !token || !fzip || !flogo){ throw new Error("Missing required fields."); }
+      if(fzip.size > MAX_SAFE_UPLOAD){
+        log(`ZIP is ${(fzip.size/1024/1024).toFixed(1)} MB > ~95 MB browser/API limit.`, "ERROR");
+        throw new Error("Please split or commit via Git.");
+      }
 
       const ts = new Date().toISOString().replace(/[:.]/g,"-");
-      const zipPath = `input/uploads/${ts}/${fzip.name}`;
-      const logoPath= `input/uploads/${ts}/${flogo.name}`;
-      const capsPath= fcaps ? `input/uploads/${ts}/${fcaps.name}` : "";
-      const ordPath = fordr ? `input/uploads/${ts}/${fordr.name}` : "";
+      const base = `input/uploads/${ts}`;
+      const zipPath = `${base}/${fzip.name}`;
+      const logoPath= `${base}/${flogo.name}`;
+      const capsPath= fcaps ? `${base}/${fcaps.name}` : "";
+      const ordPath = fordr ? `${base}/${fordr.name}` : "";
 
       log("Uploading files to repo …");
       await uploadContent(owner, repo, token, zipPath, fzip);
       await uploadContent(owner, repo, token, logoPath, flogo);
       if(fcaps) await uploadContent(owner, repo, token, capsPath, fcaps);
       if(fordr) await uploadContent(owner, repo, token, ordPath, fordr);
-      log("Uploads complete.");
+      log("Uploads complete.", "OK");
 
       const inputs = {
         property_name: $("property").value,
@@ -209,22 +244,24 @@
 
       log("Dispatching workflow …");
       await dispatchWorkflow(owner, repo, token, inputs);
-      log("Workflow started. Polling status …");
+      log("Workflow started. Waiting for run to register …");
 
-      let run = null;
-      // Wait for the run to appear
-      for(let i=0;i<30;i++){
+      let run = null, attempts = 0;
+      while(!run && attempts < 30){
         await new Promise(r=>setTimeout(r, 3000));
-        run = await getLatestRun(owner, repo, token);
-        if(run) break;
+        const runs = await listRuns(owner, repo, token);
+        if(runs.workflow_runs && runs.workflow_runs.length){
+          run = runs.workflow_runs[0];
+        }
+        attempts++;
       }
       if(!run) throw new Error("Could not find a workflow run. Check Actions tab.");
 
-      // Poll until completed
+      log(`Run ID: ${run.id}. Polling status …`);
       while(true){
         await new Promise(r=>setTimeout(r, 5000));
         const cur = await getRun(owner, repo, token, run.id);
-        log(`Status: ${cur.status} — Conclusion: ${cur.conclusion || "…"}`);
+        log(`Status: ${cur.status} / Conclusion: ${cur.conclusion || "…"}`);
         if(cur.status === "completed"){
           run = cur;
           break;
@@ -232,43 +269,62 @@
       }
 
       if(run.conclusion !== "success"){
-        log("Workflow did not succeed. See Actions logs.", "danger");
+        log("Workflow did not succeed. See Actions logs.", "ERROR");
+        show(links);
+        const a = document.createElement("a");
+        a.href = `https://github.com/${owner}/${repo}/actions/runs/${run.id}`;
+        a.target = "_blank";
+        a.textContent = "Open run logs";
+        links.appendChild(a);
         return;
       }
 
-      // Fetch artifacts
-      log("Fetching artifacts …");
+      log("Success. Fetching artifacts …", "OK");
       const arts = await getArtifacts(owner, repo, token, run.id);
-      show(links); links.innerHTML = "<h3>Downloads</h3>";
+      show(links);
+      links.innerHTML = "<h3>Downloads</h3>";
+
       const pagesUrl = `https://${owner}.github.io/${repo}/`;
-      links.innerHTML += `<a href="${pagesUrl}" target="_blank">View GitHub Pages output</a>`;
+      const lnk = document.createElement("a");
+      lnk.href = pagesUrl;
+      lnk.textContent = "Open GitHub Pages output";
+      lnk.target = "_blank";
+      links.appendChild(lnk);
+
       (arts.artifacts || []).forEach(a=>{
-        // download_url requires API fetch with token; we'll present the API link
-        const dl = `https://api.github.com/repos/${owner}/${repo}/actions/artifacts/${a.id}/zip`;
-        const anchor = document.createElement("a");
-        anchor.href = dl;
-        anchor.textContent = `Artifact: ${a.name}`;
-        anchor.target = "_blank";
-        anchor.rel = "noopener";
-        links.appendChild(anchor);
+        const btn = document.createElement("button");
+        btn.className = "btn small";
+        btn.textContent = `Download ${a.name}.zip`;
+        btn.onclick = ()=>downloadArtifact(owner, repo, token, a);
+        links.appendChild(btn);
       });
 
-      log("Done. You can also check the Pages site for HTML outputs.");
-    } catch(err){
-      log("Error: " + err.message, "danger");
+      log("All done. You can also open the Pages site for HTML outputs.", "OK");
+    }catch(err){
+      log(`Error: ${err.message}`, "ERROR");
       console.error(err);
-    } finally {
-      $("run").disabled = false;
+    }finally{
+      btn.disabled = false;
     }
-  });
+  }
 
-  // Prefill owner if page is being served from GitHub Pages
+  function doReset(){
+    $("form").reset();
+    out.textContent = "";
+    hide(out); hide(links);
+  }
+
+  $("form").addEventListener("submit", run);
+  reset.addEventListener("click", doReset);
+
+  // Prefill owner if served from GitHub Pages
   try{
     const host = location.hostname;
     if(host.endsWith(".github.io")){
-      const owner = host.replace(".github.io",""); $("owner").value = owner;
+      $("owner").value = host.replace(".github.io","");
     }
   }catch(e){}
 })();
 </script>
+</body>
 </html>
