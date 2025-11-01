@@ -24,7 +24,7 @@ Usage (local or via GitHub Actions):
     --outdir "output/landmark"
 """
 
-import os, io, re, csv, zipfile, base64
+import os, io, re, csv, zipfile, base64, shutil
 from datetime import datetime
 from argparse import ArgumentParser
 from PIL import Image, ImageOps
@@ -38,6 +38,12 @@ IMG_EXTS = (".jpg", ".jpeg", ".png", ".webp")
 # ---------- Helper functions ----------
 
 def ensure_dir(path):
+    os.makedirs(path, exist_ok=True)
+    return path
+
+def reset_dir(path):
+    if os.path.isdir(path):
+        shutil.rmtree(path)
     os.makedirs(path, exist_ok=True)
     return path
 
@@ -235,7 +241,7 @@ def main():
     }
 
     work = ensure_dir(args.outdir)
-    extract_dir = os.path.join(work, "extracted")
+    extract_dir = reset_dir(os.path.join(work, "extracted"))
     extract_zip(args.zip, extract_dir)
 
     srcs = collect_images(extract_dir)
@@ -254,9 +260,9 @@ def main():
 
     caps = load_captions_csv(args.captions_csv) if args.captions_csv and os.path.exists(args.captions_csv) else {}
     logo = Image.open(args.logo)
-    full_dir = ensure_dir(os.path.join(work, "photos_full_res_watermarked"))
-    web_dir  = ensure_dir(os.path.join(work, "photos_web_optimized_watermarked"))
-    thumbs_dir = ensure_dir(os.path.join(work, "thumbnails"))
+    full_dir = reset_dir(os.path.join(work, "photos_full_res_watermarked"))
+    web_dir  = reset_dir(os.path.join(work, "photos_web_optimized_watermarked"))
+    thumbs_dir = reset_dir(os.path.join(work, "thumbnails"))
 
     rows = []
     for i, src in enumerate(srcs, start=1):
