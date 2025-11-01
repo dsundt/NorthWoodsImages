@@ -24,7 +24,7 @@ Usage (local or via GitHub Actions):
     --outdir "output/landmark"
 """
 
-import os, io, re, csv, zipfile, base64
+import os, io, re, csv, zipfile, base64, shutil
 from datetime import datetime
 from argparse import ArgumentParser
 from PIL import Image, ImageOps
@@ -42,6 +42,9 @@ def ensure_dir(path):
     return path
 
 def extract_zip(zip_path, out_dir):
+    if os.path.exists(out_dir):
+        shutil.rmtree(out_dir)
+    os.makedirs(out_dir, exist_ok=True)
     with zipfile.ZipFile(zip_path, "r") as z:
         z.extractall(out_dir)
     return out_dir
