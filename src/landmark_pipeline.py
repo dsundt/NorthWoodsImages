@@ -41,6 +41,13 @@ def ensure_dir(path):
     os.makedirs(path, exist_ok=True)
     return path
 
+
+def reset_dir(path):
+    if os.path.exists(path):
+        shutil.rmtree(path)
+    os.makedirs(path, exist_ok=True)
+    return path
+
 def extract_zip(zip_path, out_dir):
     if os.path.exists(out_dir):
         shutil.rmtree(out_dir)
@@ -237,7 +244,7 @@ def main():
         "site": args.brand_site,
     }
 
-    work = ensure_dir(args.outdir)
+    work = reset_dir(args.outdir)
     extract_dir = os.path.join(work, "extracted")
     extract_zip(args.zip, extract_dir)
 
@@ -257,9 +264,9 @@ def main():
 
     caps = load_captions_csv(args.captions_csv) if args.captions_csv and os.path.exists(args.captions_csv) else {}
     logo = Image.open(args.logo)
-    full_dir = ensure_dir(os.path.join(work, "photos_full_res_watermarked"))
-    web_dir  = ensure_dir(os.path.join(work, "photos_web_optimized_watermarked"))
-    thumbs_dir = ensure_dir(os.path.join(work, "thumbnails"))
+    full_dir = reset_dir(os.path.join(work, "photos_full_res_watermarked"))
+    web_dir  = reset_dir(os.path.join(work, "photos_web_optimized_watermarked"))
+    thumbs_dir = reset_dir(os.path.join(work, "thumbnails"))
 
     rows = []
     for i, src in enumerate(srcs, start=1):
