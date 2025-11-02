@@ -240,7 +240,7 @@ def main():
         "site": args.brand_site,
     }
 
-    work = ensure_dir(args.outdir)
+    work = reset_dir(args.outdir)
     extract_dir = reset_dir(os.path.join(work, "extracted"))
     extract_zip(args.zip, extract_dir)
 
