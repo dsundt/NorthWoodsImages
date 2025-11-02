@@ -87,17 +87,32 @@ jobs:
       - name: Prepare site
         run: |
           mkdir -p site
-          FOUND_HTML=$(ls output/landmark/*_Photo_Order_Branded.html 2>/dev/null | head -n 1 || true)
-          if [ -n "$FOUND_HTML" ]; then
-            cp "$FOUND_HTML" site/index.html
+          rm -rf site/*
+          PROPERTY_INPUT="${{ github.event.inputs.property_name }}"
+          PROPERTY_SLUG="${PROPERTY_INPUT// /_}"
+          TARGET_HTML="output/landmark/${PROPERTY_SLUG}_Photo_Order_Branded.html"
+          if [ -f "$TARGET_HTML" ]; then
+            cp "$TARGET_HTML" site/index.html
           else
-            echo "<html><body><h2>NorthWoodsImages Output</h2><ul>" > site/index.html
-            for f in output/landmark/*.html; do
-              b=$(basename "$f"); cp "$f" "site/$b"
-              echo "<li><a href='$b'>$b</a></li>" >> site/index.html
-            done
-            echo "</ul></body></html>" >> site/index.html
+            FOUND_HTML=$(ls -t output/landmark/*_Photo_Order_Branded.html 2>/dev/null | head -n 1 || true)
+            if [ -n "$FOUND_HTML" ]; then
+              cp "$FOUND_HTML" site/index.html
+            else
+              echo "<html><body><h2>NorthWoodsImages Output</h2><ul>" > site/index.html
+              for f in output/landmark/*.html; do
+                [ -e "$f" ] || continue
+                b=$(basename "$f")
+                cp "$f" "site/$b"
+                echo "<li><a href='$b'>$b</a></li>" >> site/index.html
+              done
+              echo "</ul></body></html>" >> site/index.html
+            fi
           fi
+          for f in output/landmark/*.html; do
+            [ -e "$f" ] || continue
+            b=$(basename "$f")
+            cp "$f" "site/$b"
+          done
           mkdir -p site/assets
           if [ -d output/landmark/thumbnails ]; then
             cp -r output/landmark/thumbnails site/assets/thumbnails
